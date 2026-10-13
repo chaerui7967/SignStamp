@@ -8,12 +8,17 @@
 """
 from __future__ import annotations
 
+import atexit
+import math
 import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
 import pymupdf as fitz
+from PIL import Image
+
+from . import sigproc
 
 PDF_EXT = {".pdf"}
 WORD_EXT = {".docx", ".doc", ".rtf", ".odt"}
@@ -25,12 +30,15 @@ PT_TO_HWPUNIT = 100  # 1pt = 100 HWPUNIT (1inch = 7200)
 
 @dataclass
 class Placement:
+    """x, y, w, h 는 회전 전 사각형. 회전은 사각형 중심 기준, angle 은 시계 방향(도)."""
     sig_path: str
     page: int  # 0부터
     x: float
     y: float
     w: float
     h: float
+    angle: float = 0.0
+    bold: int = 0
 
 
 def kind_of(path: str | Path) -> str:
@@ -57,6 +65,7 @@ def default_output_path(src: str | Path) -> Path:
 # ---------------------------------------------------------------- 미리보기
 
 _tmpdir = Path(tempfile.mkdtemp(prefix="signstamp_"))
+atexit.register(shutil.rmtree, _tmpdir, ignore_errors=True)
 
 
 def make_preview_pdf(src: str | Path) -> Path:
@@ -83,6 +92,7 @@ def save_with_signatures(src: str | Path, out: str | Path, placements: list[Plac
     if src == out:
         raise ValueError("원본과 다른 파일 이름으로 저장해 주세요.")
     kind = kind_of(src)
+    placements = [_bake(p, i) for i, p in enumerate(placements)]
     if kind == "pdf":
         _insert_pdf(src, out, placements)
         return []
@@ -94,6 +104,22 @@ def save_with_signatures(src: str | Path, out: str | Path, placements: list[Plac
     except Exception:
         out.unlink(missing_ok=True)
         raise
+
+
+def _bake(p: Placement, index: int) -> Placement:
+    """굵기·회전·비율 변경을 PNG 에 반영하고, 회전된 외곽 사각형으로 바꾼 Placement."""
+    with Image.open(p.sig_path) as im:
+        ratio_changed = abs(im.height / im.width - p.h / p.w) > 0.01
+    if not (p.angle % 360 or p.bold or ratio_changed):
+        return p
+    img = sigproc.render_placed(p.sig_path, p.w, p.h, p.angle, p.bold)
+    path = _tmpdir / f"placed_{index}.png"
+    img.save(path)
+    a = math.radians(p.angle)
+    bw = abs(p.w * math.cos(a)) + abs(p.h * math.sin(a))
+    bh = abs(p.w * math.sin(a)) + abs(p.h * math.cos(a))
+    cx, cy = p.x + p.w / 2, p.y + p.h / 2
+    return Placement(str(path), p.page, cx - bw / 2, cy - bh / 2, bw, bh)
 
 
 # ---------------------------------------------------------------- PDF

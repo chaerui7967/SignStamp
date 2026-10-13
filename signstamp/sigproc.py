@@ -96,3 +96,35 @@ def crop_to_ink(img: Image.Image, pad_ratio: float = 0.03) -> Image.Image:
     x0, x1 = max(0, xs.min() - pad), min(img.width, xs.max() + pad + 1)
     y0, y1 = max(0, ys.min() - pad), min(img.height, ys.max() + pad + 1)
     return img.crop((x0, y0, x1, y1))
+
+
+BOLD_MAX = 5
+
+
+def thicken(img: Image.Image, level: int) -> Image.Image:
+    """획을 굵게 (level 0 = 원본, 클수록 굵게). 투명도는 팽창, 색은 가장 진한 이웃 색으로."""
+    if level <= 0:
+        return img
+    img = img.convert("RGBA")
+    steps = level * max(1, round(max(img.size) / 700))
+    alpha, rgb = img.getchannel("A"), img.convert("RGB")
+    for _ in range(steps):
+        alpha = alpha.filter(ImageFilter.MaxFilter(3))
+        rgb = rgb.filter(ImageFilter.MinFilter(3))
+    out = rgb.convert("RGBA")
+    out.putalpha(alpha.filter(ImageFilter.GaussianBlur(0.6)))
+    return out
+
+
+def render_placed(path: str, w: float, h: float, angle: float, bold: int) -> Image.Image:
+    """배치 상태(크기 비율·굵기·회전)를 반영한 이미지. 회전하면 캔버스가 회전 외곽 크기로 커진다.
+
+    angle: 시계 방향 각도(도)
+    """
+    img = thicken(Image.open(path).convert("RGBA"), bold)
+    target_h = max(1, round(img.width * h / w))
+    if abs(target_h - img.height) > 1:  # 비율을 바꿔 늘린 경우
+        img = img.resize((img.width, target_h), Image.LANCZOS)
+    if angle % 360:
+        img = img.rotate(-angle, resample=Image.BICUBIC, expand=True)
+    return img
