@@ -1,0 +1,28 @@
+[project]
+name = "signstamp"
+version = "0.1.0"
+description = "서명 사진을 투명 PNG 로 등록하고 PDF/Word/한글 문서에 삽입"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "PySide6>=6.5",
+    "PyMuPDF>=1.23",
+    "Pillow>=10",
+    "numpy",
+    "scipy",
+    "pywin32; sys_platform == 'win32'",
+]
+
+[project.gui-scripts]
+signstamp = "signstamp.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["signstamp"]
+
+[tool.uv]
+# Anaconda 파이썬을 기반으로 쓰면 PySide6 DLL 로드가 실패하므로 uv 가 관리하는 파이썬만 사용
+python-preference = "only-managed"
