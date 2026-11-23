@@ -3,7 +3,18 @@
 흰 종이에 쓴 서명 사진을 올리면 배경을 투명하게 만들어 보관하고,
 PDF · Word · 한글 문서의 원하는 위치에 끌어다 놓아 삽입하는 Windows 데스크톱 프로그램.
 
-## 실행
+## 다운로드
+
+[**Releases**](https://github.com/chaerui7967/SignStamp/releases/latest) 에서 `SignStamp.exe` 를 받아 실행하면 됩니다.
+설치나 파이썬 없이 파일 하나로 동작합니다.
+
+- 처음 실행하면 Windows SmartScreen 이 "Windows의 PC 보호" 창을 띄울 수 있습니다.
+  서명(코드 사인)되지 않은 exe 라서 그렇고, **추가 정보 → 실행** 을 누르면 됩니다.
+- 실행할 때마다 임시 폴더에 풀어서 실행하기 때문에 창이 뜨기까지 10~30초쯤 걸립니다.
+- Word 문서(.docx/.doc/.rtf)는 **MS Word**, 한글 문서(.hwp/.hwpx)는 **한컴오피스 한글**이 설치돼 있어야 합니다.
+- PDF 는 별도 프로그램 없이 동작합니다.
+
+## 소스에서 실행
 
 [uv](https://docs.astral.sh/uv/) 로 실행합니다.
 
@@ -23,12 +34,7 @@ uv run python -m signstamp   # 콘솔 로그를 보면서 실행
 uv run --with pyinstaller pyinstaller --noconfirm main.spec
 ```
 
-빌드 설정은 `main.spec`, 아이콘은 `icon.ico` 입니다.
-
-`dist\SignStamp.exe` 하나만 복사하면 파이썬 없이 실행됩니다. 단일 파일이라 실행할 때마다 임시 폴더에 풀기 때문에 처음 뜨는 데 10~30초쯤 걸립니다.
-
-- Word 문서(.docx/.doc/.rtf)는 **MS Word**, 한글 문서(.hwp/.hwpx)는 **한컴오피스 한글**이 설치돼 있어야 합니다.
-- PDF 는 별도 프로그램 없이 동작합니다.
+결과물은 `dist\SignStamp.exe` 입니다. 빌드 설정은 `main.spec`, 아이콘은 `icon.ico` 입니다.
 
 ## 사용법
 
