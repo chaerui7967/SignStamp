@@ -17,6 +17,16 @@ uv run python -m signstamp   # 콘솔 로그를 보면서 실행
   Anaconda 파이썬을 기반으로 venv 를 만들면 PySide6 가 `DLL load failed` 로 실패하기 때문입니다.
 - uv 없이 쓰려면 `pip install -r requirements.txt` 후 `python -m signstamp` 로도 실행됩니다.
 
+### 실행파일(exe) 빌드
+
+```bash
+uv run --with pyinstaller pyinstaller --noconfirm main.spec
+```
+
+빌드 설정은 `main.spec`, 아이콘은 `icon.ico` 입니다.
+
+`dist\SignStamp.exe` 하나만 복사하면 파이썬 없이 실행됩니다. 단일 파일이라 실행할 때마다 임시 폴더에 풀기 때문에 처음 뜨는 데 10~30초쯤 걸립니다.
+
 - Word 문서(.docx/.doc/.rtf)는 **MS Word**, 한글 문서(.hwp/.hwpx)는 **한컴오피스 한글**이 설치돼 있어야 합니다.
 - PDF 는 별도 프로그램 없이 동작합니다.
 
